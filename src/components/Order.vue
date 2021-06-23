@@ -1,37 +1,36 @@
 <template>
   <div>
-    <h3>Order</h3>
     <div class="container">
-      <div class="work">
-        <h1>ready:</h1>
-        <code>{{ orders }} </code>
-      </div>
-      <div class="worked">
-        <h1>work:</h1>
-        <code>{{ worked }} </code>
-      </div>
-      <div class="finish">
-        <h1>finish:</h1>
-        <code>{{ finish }} </code>
-      </div>
+      <Table :orders="orders" title="Order" />
     </div>
     <div>
-      <SubOrder :id="data.id" @onSubOrderCompleted="onSubOrderCompleted" />
+      <SubOrder
+        v-for="order in orders"
+        :key="order.id"
+        :suborders="order.suborders"
+        :id="order.id"
+        :order="order"
+        @onSubOrderCompleted="onSubOrderCompleted"
+        @onSetStage="setStage"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import SubOrder from "@/components/SubOrder.vue";
+import Table from "@/components/Table.vue";
 
 const WORK = "WORK";
 const READY = "READY";
 const FINISH = "FINISH";
+const WAIT = "WAIT";
 
 export default {
   name: "Order",
   components: {
     SubOrder,
+    Table,
   },
 
   props: ["id"],
@@ -44,67 +43,139 @@ export default {
       orders: [],
       worked: [],
       finish: [],
-      data: {
+      orderData: {
         id: 1,
-        subOrderID: 1,
+        name: "Order",
+        status: WAIT,
+        stage: 1,
+        suborders: [],
+      },
+      suborderData: {
+        id: 1,
+        name: "Suborder",
+        orderID: 1,
+        status: WAIT,
+        // stage: 1,
+        modules: [],
+      },
+      moduleData: {
+        id: 1,
+        name: "Module",
+        suborderID: 1,
+        status: WAIT,
+        // stage: 1,
+        details: [],
+      },
+      detailData: {
+        id: 1,
+        name: "Detail",
+        moduleID: 1,
         status: READY,
-        stage: 4,
+        // stage: 1,
       },
     };
   },
 
-  computed: {
-    changeSubOrderCompleted() {
-      return this.isSubOrderCompleted;
-    },
-  },
-
-  watch: {
-    changeSubOrderCompleted() {
-      if (this.isSubOrderCompleted) {
-        this.setWorked();
-      }
-    },
-  },
   methods: {
-    onSubOrderCompleted(payload) {
-      this.isSubOrderCompleted = payload;
-      console.log('Step 4 started')
+    onSubOrderCompleted(id) {
+      let obj = this.orders.find((item) => {
+        if (item.id === id) {
+          item.status = READY;
+          return 1;
+        }
+      });
+      if (obj) {
+        this.setWorked();
+        console.log("Step 4 started");
+      }
     },
 
     setWorked() {
-      setTimeout(() => {
-        if (this.orders.length) {
+      let isReady = this.orders.find((item) => item.status === READY);
+      if (isReady) {
+        setTimeout(() => {
           let el = { ...this.orders.pop() };
           el.status = WORK;
-          el.id = this.orders.length;
-          this.worked.push(el);
+
+          this.orders.unshift(el);
 
           setTimeout(() => {
-            let obj = { ...this.worked.shift() };
+            let obj = { ...this.orders.shift() };
             obj.status = FINISH;
-            obj.stage = 5;
-            this.finish.push(obj);
+            this.orders.unshift(obj);
+            this.getNextStep();
             this.setWorked();
           }, this.time);
-        } else {
-          this.getNextStep();
-        }
-      }, 500);
+        }, 500);
+      }
     },
 
     getNextStep() {
-      const itemOrders = this.orders.find((item) => item.moduleID === this.id);
-      const itemWorked = this.worked.find((item) => item.moduleID === this.id);
-      if (!itemOrders && !itemWorked) {
+      const isFinished = this.orders.find(
+        (item) => item.status === READY || item.status === WORK
+      );
+      if (!isFinished) {
         console.log("Step 4 finished");
-        alert('FINISH')
+        this.setSuccess();
       }
+    },
+
+    setStage(id) {
+      this.orders.find((order) => {
+        if (order.id === id) {
+          order.stage++;
+        }
+      });
+    },
+
+    setSuccess() {
+      this.orders.find((order) => {
+        if (order.status === FINISH) {
+          order.stage = "SUCCESS";
+        }
+      });
     },
   },
 
   created() {
-    let orders = new Array(1).fill(this.data);
+    let details = new Array(5).fill(this.detailData).map((order, index) => {
+      return {
+        id: index + 1,
+        name: order.name,
+        moduleID: order.moduleID,
+        status: order.status,
+      };
+    });
+
+    let modules = new Array(1).fill(this.moduleData).map((order, index) => {
+      return {
+        id: index + 1,
+        name: order.name,
+        suborderID: order.suborderID,
+        status: order.status,
+        details,
+      };
+    });
+
+    let suborders = new Array(1).fill(this.suborderData).map((order, index) => {
+      return {
+        id: index + 1,
+        name: order.name,
+        orderID: order.orderID,
+        status: order.status,
+        modules,
+      };
+    });
+
+    let orders = new Array(1).fill(this.orderData).map((order, index) => {
+      return {
+        id: index + 1,
+        name: order.name,
+        status: order.status,
+        stage: order.stage,
+        suborders,
+      };
+    });
     this.orders = orders;
   },
 };

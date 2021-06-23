@@ -1,137 +1,110 @@
 <template>
   <div>
     <div class="container">
-      <table>
-        <caption>
-          Detail ready
-        </caption>
-        <tr>
-          <th>id</th>
-          <th>name</th>
-          <th>status</th>
-          <th>stage</th>
-          <th>moduleID</th>
-        </tr>
-        <tr v-for="item in orders" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.status }}</td>
-          <td>{{ item.stage }}</td>
-          <td>{{ item.moduleID }}</td>
-        </tr>
-      </table>
-      <table>
-        <caption>Detail worked</caption>
-        <tr>
-          <th>id</th>
-          <th>name</th>
-          <th>status</th>
-          <th>stage</th>
-          <th>moduleID</th>
-        </tr>
-        <tr v-for="item in worked" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.status }}</td>
-          <td>{{ item.stage }}</td>
-          <td>{{ item.moduleID }}</td>
-        </tr>
-      </table>
-      <table>
-        <caption>Detail finish</caption>
-        <tr>
-          <th>id</th>
-          <th>name</th>
-          <th>status</th>
-          <th>stage</th>
-          <th>moduleID</th>
-        </tr>
-        <tr v-for="item in finish" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.status }}</td>
-          <td>{{ item.stage }}</td>
-          <td>{{ item.moduleID }}</td>
-        </tr>
-      </table>
-
-      <!-- <div class="work">
-        <h1>ready:</h1>
-        <code>{{ orders }} </code>
-      </div> -->
-      <!-- <div class="worked">
-        <h1>work:</h1>
-        <code>{{ worked }} </code>
-      </div>
-      <div class="finish">
-        <h1>finish:</h1>
-        <code>{{ finish }} </code>
-      </div> -->
+      <Table :orders="details" :stage="order.stage" title="Detail" @onClick="setPause" />
     </div>
   </div>
 </template>
+
 <script>
+import Table from "@/components/Table.vue";
+
 const WORK = "WORK";
 const READY = "READY";
+const PAUSE = "PAUSE";
 const FINISH = "FINISH";
 
 export default {
-  props: ["id"],
+  name: "Detail",
+
+  components: {
+    Table,
+  },
+
+  props: ["details", "id", "order"],
 
   data() {
     return {
       time: 5000,
-      intervalID: 0,
-      orders: [],
-      worked: [],
-      finish: [],
-      data: {
-        id: 1,
-        name: "detail",
-        moduleID: 1,
-        status: READY,
-        stage: 1,
-      },
+      // orders: [],
+      // worked: [],
+      // finish: [],
+      // detailsData: {
+      //   id: 1,
+      //   name: "Detail",
+      //   listID: 1,
+      //   status: READY,
+      //   stage: 1,
+      // },
     };
   },
 
   methods: {
+    setPause(index) {
+      if (this.orders[index].status === READY) {
+        this.orders[index].status = PAUSE;
+      } else {
+        this.orders[index].status = READY;
+      }
+    },
+
     setWorked() {
-      setTimeout(() => {
-        if (this.orders.length) {
-          let el = { ...this.orders.pop() };
+      let isReady = this.details.find((item) => item.status === READY);
+      if (isReady) {
+        setTimeout(() => {
+          // if (this.orders.length) {
+          let el = { ...this.details.pop() };
           el.status = WORK;
-          el.id = this.orders.length;
-          this.worked.push(el);
+          // el.id = this.orders.length;
+          // this.worked.push(el);
+          this.details.unshift(el);
 
           setTimeout(() => {
-            let obj = { ...this.worked.shift() };
+            // let obj = { ...this.worked.shift() };
+            let obj = { ...this.details.shift() };
             obj.status = FINISH;
-            obj.stage = 2;
-            this.finish.unshift(obj);
+            // this.finish.unshift(obj);
+            this.details.unshift(obj);
+            this.getNextStep();
             this.setWorked();
           }, this.time);
-        } else {
-          this.getNextStep();
-        }
-      }, 500);
+          // } else {
+          // this.getNextStep();
+          // }
+        }, 500);
+      }
     },
 
     getNextStep() {
-      const itemOrders = this.orders.find((item) => item.moduleID === this.id);
-      const itemWorked = this.worked.find((item) => item.moduleID === this.id);
-      if (!itemOrders && !itemWorked) {
+      // const itemOrders = this.orders.find((item) => item.moduleID === this.id);
+      // const itemWorked = this.worked.find((item) => item.moduleID === this.id);
+      // if (!itemOrders && !itemWorked) {
+      let isFinished = this.details.find(
+        (item) =>
+          item.moduleID === this.id &&
+          (item.status === READY || item.status === WORK)
+      );
+      if (!isFinished) {
         console.log("Step 1 finished");
-        this.$emit("onDetailCompleted", true);
+        this.$emit("onDetailCompleted", this.id);
+        this.$emit("onSetStage", this.order.id);
       }
     },
   },
 
   created() {
-    let orders = new Array(20).fill(this.data);
-    this.orders = orders;
-
+    // let details = new Array(5).fill(this.data).map((order, index) => {
+    //   return {
+    //     id: index + 1,
+    //     name: order.name,
+    //     listID: order.listID,
+    //     status: order.status,
+    //     stage: order.stage,
+    //   };
+    // });
+    // this.orders = orders;
     this.setWorked();
+    console.log("Step 1 started");
   },
 };
 </script>
@@ -142,30 +115,5 @@ export default {
   margin: 0 auto;
   align-items: flex-start;
   justify-content: space-between;
-}
-
-table {
-   width: 600px;
-   border-top: 3px solid grey;
-    border-collapse: collapse;
-    text-align: center;
-    margin-right: 10px;
-}
-
-td:first-child {
-   width: 30%;
-}
-
-th, td {
-   width: 20%;
-   padding: 10px 15px;
-   border: 1px solid grey;
-}
-
-caption {
-  caption-side: top;
-  text-align: right;
-  padding: 10px 0;
-  font-size: 18px;
 }
 </style>
