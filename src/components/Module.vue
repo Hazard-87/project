@@ -1,14 +1,13 @@
 <template>
   <div>
     <div class="container">
-      <Table :orders="modules" :stage="order.stage" title="Module" />
+      <Table :orders="suborder.modules" :stage="order.stage" title="Module" />
     </div>
     <div>
       <Detail
-        v-for="module in modules"
+        v-for="module in suborder.modules"
         :key="module.id"
-        :details="module.details"
-        :id="module.id"
+        :module="module"
         :order="order"
         @onDetailCompleted="onDetailCompleted"
         @onSetStage="setStage"
@@ -33,44 +32,17 @@ export default {
     Table,
   },
 
-  props: ["modules", "id", "order"],
+  props: ["order", 'suborder'],
 
   data() {
     return {
       time: 10000,
-      // intervalID: 0,
-      // isDetailCompleted: false,
-      // orders: [],
-      // worked: [],
-      // finish: [],
-      // modulesData: {
-      //   id: 1,
-      //   name: "Module",
-      //   listID: 1,
-      //   status: WAIT,
-      //   stage: 1,
-      // },
     };
   },
 
-  // computed: {
-  //   changeDetailCompleted() {
-  //     return this.orders;
-  //   },
-  // },
-
-  // watch: {
-  //   changeDetailCompleted() {
-  //     console.log('1111')
-  //     // if (this.orders.status === READY) {
-  //     // if (this.isDetailCompleted) {
-  //       this.setWorked();
-  //     // }
-  //   },
-  // },
   methods: {
     onDetailCompleted(id) {
-      let obj = this.modules.find((item) => {
+      let obj = this.suborder.modules.find((item) => {
         if (item.id === id) {
           item.status = READY;
           return 1;
@@ -83,17 +55,17 @@ export default {
     },
 
     setWorked() {
-      let isReady = this.modules.find((item) => item.status === READY);
+      let isReady = this.suborder.modules.find((item) => item.status === READY);
       if (isReady) {
         setTimeout(() => {
-          let el = { ...this.modules.pop() };
+          let el = { ...this.suborder.modules.pop() };
           el.status = WORK;
-          this.modules.unshift(el);
+          this.suborder.modules.unshift(el);
 
           setTimeout(() => {
-            let obj = { ...this.modules.shift() };
+            let obj = { ...this.suborder.modules.shift() };
             obj.status = FINISH;
-            this.modules.unshift(obj);
+            this.suborder.modules.unshift(obj);
             this.getNextStep();
             this.setWorked();
           }, this.time);
@@ -102,14 +74,14 @@ export default {
     },
 
     getNextStep() {
-      const isFinished = this.modules.find(
+      const isFinished = this.suborder.modules.find(
         (item) =>
-          item.suborderID === this.id &&
+          item.suborderID === this.suborder.id &&
           (item.status === READY || item.status === WORK)
       );
       if (!isFinished) {
         console.log("Step 2 finished");
-        this.$emit("onModuleCompleted", this.id);
+        this.$emit("onModuleCompleted", this.suborder.id);
         this.$emit("onSetStage", this.order.id);
       }
     },
@@ -118,23 +90,6 @@ export default {
       this.$emit("onSetStage", id);
     },
   },
-
-  computed: {
-    
-  },
-
-  // created() {
-  //   let modules = new Array(10).fill(this.data).map((order, index) => {
-  //     return {
-  //       id: index + 1,
-  //       name: order.name,
-  //       listID: order.listID,
-  //       status: order.status,
-  //       stage: order.stage,
-  //     };
-  //   });
-  //   this.orders = orders;
-  // },
 };
 </script>
 

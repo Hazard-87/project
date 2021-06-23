@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="container">
-      <Table :orders="details" :stage="order.stage" title="Detail" @onClick="setPause" />
+      <Table :orders="module.details" :stage="order.stage" title="Detail" @onClick="setPause" />
     </div>
   </div>
 </template>
@@ -21,21 +21,11 @@ export default {
     Table,
   },
 
-  props: ["details", "id", "order"],
+  props: ["order", "module"],
 
   data() {
     return {
       time: 5000,
-      // orders: [],
-      // worked: [],
-      // finish: [],
-      // detailsData: {
-      //   id: 1,
-      //   name: "Detail",
-      //   listID: 1,
-      //   status: READY,
-      //   stage: 1,
-      // },
     };
   },
 
@@ -49,60 +39,39 @@ export default {
     },
 
     setWorked() {
-      let isReady = this.details.find((item) => item.status === READY);
+      let isReady = this.module.details.find((item) => item.status === READY);
       if (isReady) {
         setTimeout(() => {
-          // if (this.orders.length) {
-          let el = { ...this.details.pop() };
+          let el = { ...this.module.details.pop() };
           el.status = WORK;
-          // el.id = this.orders.length;
-          // this.worked.push(el);
-          this.details.unshift(el);
+          this.module.details.unshift(el);
 
           setTimeout(() => {
-            // let obj = { ...this.worked.shift() };
-            let obj = { ...this.details.shift() };
+            let obj = { ...this.module.details.shift() };
             obj.status = FINISH;
-            // this.finish.unshift(obj);
-            this.details.unshift(obj);
+            this.module.details.unshift(obj);
             this.getNextStep();
             this.setWorked();
           }, this.time);
-          // } else {
-          // this.getNextStep();
-          // }
         }, 500);
       }
     },
 
     getNextStep() {
-      // const itemOrders = this.orders.find((item) => item.moduleID === this.id);
-      // const itemWorked = this.worked.find((item) => item.moduleID === this.id);
-      // if (!itemOrders && !itemWorked) {
-      let isFinished = this.details.find(
+      let isFinished = this.module.details.find(
         (item) =>
-          item.moduleID === this.id &&
+          item.moduleID === this.module.id &&
           (item.status === READY || item.status === WORK)
       );
       if (!isFinished) {
         console.log("Step 1 finished");
-        this.$emit("onDetailCompleted", this.id);
+        this.$emit("onDetailCompleted", this.module.id);
         this.$emit("onSetStage", this.order.id);
       }
     },
   },
 
   created() {
-    // let details = new Array(5).fill(this.data).map((order, index) => {
-    //   return {
-    //     id: index + 1,
-    //     name: order.name,
-    //     listID: order.listID,
-    //     status: order.status,
-    //     stage: order.stage,
-    //   };
-    // });
-    // this.orders = orders;
     this.setWorked();
     console.log("Step 1 started");
   },

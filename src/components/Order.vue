@@ -7,8 +7,6 @@
       <SubOrder
         v-for="order in orders"
         :key="order.id"
-        :suborders="order.suborders"
-        :id="order.id"
         :order="order"
         @onSubOrderCompleted="onSubOrderCompleted"
         @onSetStage="setStage"
@@ -55,7 +53,6 @@ export default {
         name: "Suborder",
         orderID: 1,
         status: WAIT,
-        // stage: 1,
         modules: [],
       },
       moduleData: {
@@ -63,7 +60,6 @@ export default {
         name: "Module",
         suborderID: 1,
         status: WAIT,
-        // stage: 1,
         details: [],
       },
       detailData: {
@@ -71,7 +67,6 @@ export default {
         name: "Detail",
         moduleID: 1,
         status: READY,
-        // stage: 1,
       },
     };
   },
@@ -138,7 +133,7 @@ export default {
   },
 
   created() {
-    let details = new Array(5).fill(this.detailData).map((order, index) => {
+    let details = new Array(2).fill(this.detailData).map((order, index) => {
       return {
         id: index + 1,
         name: order.name,
