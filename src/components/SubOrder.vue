@@ -74,12 +74,16 @@ export default {
     },
 
     getNextStep() {
-      const isFinished = this.order.suborders.find(
-        (item) =>
-          item.orderID === this.order.id &&
-          (item.status === READY || item.status === WORK)
-      );
-      if (!isFinished) {
+      let isNextStep = true;
+
+      this.order.suborders.forEach((item) => {
+        if (item.orderID == this.order.id) {
+          if (item.status === READY || item.status === WORK) {
+            isNextStep = false;
+          }
+        }
+      });
+      if (isNextStep) {
         console.log("Step 3 finished");
         this.$emit("onSubOrderCompleted", this.order.id);
         this.$emit("onSetStage", this.order.id);
@@ -90,7 +94,6 @@ export default {
       this.$emit("onSetStage", id);
     },
   },
-
 };
 </script>
 

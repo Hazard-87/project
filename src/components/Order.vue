@@ -133,7 +133,7 @@ export default {
   },
 
   created() {
-    let details = new Array(2).fill(this.detailData).map((order, index) => {
+    let details = new Array(5).fill(this.detailData).map((order, index) => {
       return {
         id: index + 1,
         name: order.name,

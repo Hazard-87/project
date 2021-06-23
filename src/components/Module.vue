@@ -1,5 +1,6 @@
 <template>
   <div>
+    <Form @addTask="addTask" />
     <div class="container">
       <Table :orders="suborder.modules" :stage="order.stage" title="Module" />
     </div>
@@ -19,6 +20,7 @@
 <script>
 import Detail from "@/components/Detail.vue";
 import Table from "@/components/Table.vue";
+import Form from "@/components/Form.vue";
 
 const WORK = "WORK";
 const READY = "READY";
@@ -30,9 +32,10 @@ export default {
   components: {
     Detail,
     Table,
+    Form
   },
 
-  props: ["order", 'suborder'],
+  props: ["order", "suborder"],
 
   data() {
     return {
@@ -41,6 +44,15 @@ export default {
   },
 
   methods: {
+    addTask(payload) {
+      this.suborder.modules.push({
+        id: Date.now(),
+        name: payload.name,
+        suborderID: payload.listID,
+        status: READY,
+      });
+    },
+
     onDetailCompleted(id) {
       let obj = this.suborder.modules.find((item) => {
         if (item.id === id) {
@@ -74,12 +86,16 @@ export default {
     },
 
     getNextStep() {
-      const isFinished = this.suborder.modules.find(
-        (item) =>
-          item.suborderID === this.suborder.id &&
-          (item.status === READY || item.status === WORK)
-      );
-      if (!isFinished) {
+      let isNextStep = true;
+
+      this.suborder.modules.forEach((item) => {
+        if (item.suborderID == this.suborder.id) {
+          if (item.status === READY || item.status === WORK) {
+            isNextStep = false;
+          }
+        }
+      });
+      if (isNextStep) {
         console.log("Step 2 finished");
         this.$emit("onModuleCompleted", this.suborder.id);
         this.$emit("onSetStage", this.order.id);
