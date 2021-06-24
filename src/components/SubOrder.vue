@@ -1,24 +1,16 @@
 <template>
   <div>
-    <div class="container">
-      <Table :orders="order.suborders" :stage="order.stage" title="SubOrder" />
-    </div>
-    <div>
-      <Module
-        v-for="suborder in order.suborders"
-        :key="suborder.id"
-        :suborder="suborder"
-        :order="order"
-        @onModuleCompleted="onModuleCompleted"
-        @onSetStage="setStage"
-      />
-    </div>
+    <RowItem
+      v-for="suborder in Suborders"
+      :key="suborder.id"
+      :list="suborder"
+    />
   </div>
 </template>
 
 <script>
-import Module from "@/components/Module.vue";
-import Table from "@/components/Table.vue";
+import RowItem from "@/components/RowItem.vue";
+import { mapGetters, mapActions } from 'vuex';
 
 const WORK = "WORK";
 const READY = "READY";
@@ -28,11 +20,8 @@ const WAIT = "WAIT";
 export default {
   name: "SubOrder",
   components: {
-    Module,
-    Table,
+    RowItem,
   },
-
-  props: ["order"],
 
   data() {
     return {
@@ -41,31 +30,32 @@ export default {
   },
 
   methods: {
-    onModuleCompleted(id) {
-      let obj = this.order.suborders.find((item) => {
-        if (item.id === id) {
-          item.status = READY;
-          return 1;
-        }
-      });
-      if (obj) {
-        this.setWorked();
-        console.log("Step 3 started");
-      }
-    },
+     ...mapActions(['orderStepAction']),
+  //   onModuleCompleted(id) {
+  //     let obj = this.order.suborders.find((item) => {
+  //       if (item.id === id) {
+  //         item.status = READY;
+  //         return 1;
+  //       }
+  //     });
+  //     if (obj) {
+  //       this.setWorked();
+  //       console.log("Step 3 started");
+  //     }
+    // },
 
     setWorked() {
-      let isReady = this.order.suborders.find((item) => item.status === READY);
+      let isReady = this.Suborders.find((item) => item.status === READY);
       if (isReady) {
         setTimeout(() => {
-          let el = { ...this.order.suborders.pop() };
+          let el = { ...this.Suborders.pop() };
           el.status = WORK;
-          this.order.suborders.unshift(el);
+          this.Suborders.unshift(el);
 
           setTimeout(() => {
-            let obj = { ...this.order.suborders.shift() };
+            let obj = { ...this.Suborders.shift() };
             obj.status = FINISH;
-            this.order.suborders.unshift(obj);
+            this.Suborders.unshift(obj);
             this.getNextStep();
             this.setWorked();
           }, this.time);
@@ -75,25 +65,43 @@ export default {
 
     getNextStep() {
       let isNextStep = true;
+      let id = null;
 
-      this.order.suborders.forEach((item) => {
-        if (item.orderID == this.order.id) {
-          if (item.status === READY || item.status === WORK) {
-            isNextStep = false;
+      this.Orders.forEach((order) => {
+        this.Suborders.forEach((item) => {
+          if (item.orderID == order.id) {
+            id = item.orderID;
+            if (item.status === READY || item.status === WORK) {
+              isNextStep = false;
+            }
           }
-        }
+        });
       });
       if (isNextStep) {
         console.log("Step 3 finished");
-        this.$emit("onSubOrderCompleted", this.order.id);
-        this.$emit("onSetStage", this.order.id);
+        this.orderStepAction(id);
+        // this.$emit("onSetStage", this.order.id);
       }
     },
 
-    setStage(id) {
-      this.$emit("onSetStage", id);
+  //   setStage(id) {
+  //     this.$emit("onSetStage", id);
+  //   },
+  },
+
+  computed: {
+    ...mapGetters(['Suborders', 'Orders']),
+
+   changeModuleCompleted() {
+      this.setWorked();
+      console.log("Step 3 started");
+      return this.Suborders;
     },
   },
+
+  watch: {
+    changeModuleCompleted() {}
+  }
 };
 </script>
 

@@ -1,20 +1,13 @@
 <template>
   <div>
-    <Form @addTask="addTask" />
-    <div class="container">
-      <Table
-        :orders="module.details"
-        :stage="order.stage"
-        title="Detail"
-        @onClick="setPause"
-      />
-    </div>
+    <RowItem v-for="detail in Details" :key="detail.id" :list="detail" />
   </div>
 </template>
 
 <script>
-import Table from "@/components/Table.vue";
+import RowItem from "@/components/RowItem.vue";
 import Form from "@/components/Form.vue";
+import { mapGetters, mapActions } from "vuex";
 
 const WORK = "WORK";
 const READY = "READY";
@@ -25,11 +18,9 @@ export default {
   name: "Detail",
 
   components: {
-    Table,
+    RowItem,
     Form,
   },
-
-  props: ["order", "module"],
 
   data() {
     return {
@@ -38,6 +29,8 @@ export default {
   },
 
   methods: {
+     ...mapActions(['moduleStepAction']),
+
     addTask(payload) {
       this.module.details.push({
         id: Date.now(),
@@ -56,18 +49,18 @@ export default {
     },
 
     setWorked() {
-      if (this.module.details) {
-        let isReady = this.module.details.find((item) => item.status === READY);
+      if (this.Details) {
+        let isReady = this.Details.find((item) => item.status === READY);
         if (isReady) {
           setTimeout(() => {
-            let el = { ...this.module.details.pop() };
+            let el = { ...this.Details.pop() };
             el.status = WORK;
-            this.module.details.unshift(el);
+            this.Details.unshift(el);
 
             setTimeout(() => {
-              let obj = { ...this.module.details.shift() };
+              let obj = { ...this.Details.shift() };
               obj.status = FINISH;
-              this.module.details.unshift(obj);
+              this.Details.unshift(obj);
               this.getNextStep();
               this.setWorked();
             }, this.time);
@@ -78,21 +71,29 @@ export default {
 
     getNextStep() {
       let isNextStep = true;
+      let id = null
 
-      this.module.details.forEach((item) => {
-        if (item.moduleID == this.module.id) {
-          if (item.status === READY || item.status === WORK) {
-            isNextStep = false;
+      this.Modules.forEach((module) => {
+        this.Details.forEach((item) => {
+          if (item.moduleID == module.id) {
+            id = item.moduleID
+            if (item.status === READY || item.status === WORK) {
+              isNextStep = false;
+            }
           }
-        }
+        });
       });
 
       if (isNextStep) {
         console.log("Step 1 finished");
-        this.$emit("onDetailCompleted", this.module.id);
-        this.$emit("onSetStage", this.order.id);
+        this.moduleStepAction(id);
+        // this.$emit("onSetStage", this.order.id);
       }
     },
+  },
+
+  computed: {
+    ...mapGetters(["Details", "Modules"]),
   },
 
   created() {
