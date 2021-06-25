@@ -2,7 +2,7 @@
   <div class="box">
     <div class="box-top">
       <span>Modules</span>
-      <Form />
+      <Form @addTask="addTask" />
     </div>
     <RowHeader listID="suborderID" />
     <RowItem v-for="module in Modules" :key="module.id" :list="module" />
@@ -37,6 +37,16 @@ export default {
 
   methods: {
     ...mapActions(["suborderStepAction"]),
+
+    addTask(payload) {
+      this.Modules.push({
+        id: this.Modules.length + 1,
+        name: payload.name,
+        suborderID: payload.listID,
+        status: WAIT,
+        stage: 1,
+      });
+    },
 
     setWorked() {
       if (this.Modules) {

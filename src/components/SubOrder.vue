@@ -2,7 +2,7 @@
   <div class="box">
     <div class="box-top">
       <span>Suborders</span>
-      <Form />
+      <Form @addTask="addTask" />
     </div>
     <RowHeader listID="orderID" />
     <RowItem
@@ -40,6 +40,16 @@ export default {
 
   methods: {
     ...mapActions(["orderStepAction"]),
+
+    addTask(payload) {
+      this.Suborders.push({
+        id: this.Suborders.length + 1,
+        name: payload.name,
+        orderID: payload.listID,
+        status: WAIT,
+        stage: 1,
+      });
+    },
 
     setWorked() {
       if (this.Suborders) {

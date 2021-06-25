@@ -2,7 +2,7 @@
   <div class="box">
     <div class="box-top">
       <span>Orders</span>
-      <Form />
+      <Form @addTask="addTask" />
     </div>
     <RowHeader />
     <RowItem v-for="order in Orders" :key="order.id" :list="order" />
@@ -25,7 +25,7 @@ export default {
   components: {
     RowItem,
     RowHeader,
-    Form
+    Form,
   },
 
   data() {
@@ -35,6 +35,15 @@ export default {
   },
 
   methods: {
+    addTask(payload) {
+      this.Orders.push({
+        id: this.Orders.length + 1,
+        name: payload.name,
+        status: WAIT,
+        stage: 1,
+      });
+    },
+
     setWorked() {
       if (this.Orders) {
         let obj = this.Orders.find((item) => item.status === READY);
