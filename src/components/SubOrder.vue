@@ -10,7 +10,7 @@
 
 <script>
 import RowItem from "@/components/RowItem.vue";
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions } from "vuex";
 
 const WORK = "WORK";
 const READY = "READY";
@@ -30,94 +30,89 @@ export default {
   },
 
   methods: {
-     ...mapActions(['orderStepAction']),
-  //   onModuleCompleted(id) {
-  //     let obj = this.order.suborders.find((item) => {
-  //       if (item.id === id) {
-  //         item.status = READY;
-  //         return 1;
-  //       }
-  //     });
-  //     if (obj) {
-  //       this.setWorked();
-  //       console.log("Step 3 started");
-  //     }
-    // },
+    ...mapActions(["orderStepAction"]),
 
     setWorked() {
       let isReady = this.Suborders.find((item) => item.status === READY);
       if (isReady) {
+        // setTimeout(() => {
+        let el = { ...this.Suborders.pop() };
+        el.status = WORK;
+        this.Suborders.unshift(el);
+
         setTimeout(() => {
-          let el = { ...this.Suborders.pop() };
-          el.status = WORK;
-          this.Suborders.unshift(el);
-
-          setTimeout(() => {
-            let obj = { ...this.Suborders.shift() };
-            obj.status = FINISH;
-            this.Suborders.unshift(obj);
-            this.getNextStep();
-            this.setWorked();
-          }, this.time);
-        }, 500);
+          let obj = { ...this.Suborders.shift() };
+          obj.status = FINISH;
+          this.Suborders.unshift(obj);
+          this.getNextStep(obj.orderID);
+          this.setWorked();
+        }, this.time);
+        // }, 500);
       }
     },
 
-    getNextStep() {
+    getNextStep(id) {
       let isNextStep = true;
-      let id = null;
 
-      this.Orders.forEach((order) => {
-        this.Suborders.forEach((item) => {
-          if (item.orderID == order.id) {
-            id = item.orderID;
-            if (item.status === READY || item.status === WORK) {
-              isNextStep = false;
-            }
-          }
-        });
+      let arr = this.Suborders.filter((suborder) => suborder.orderID == id);
+      arr.forEach((obj) => {
+        if (
+          obj.status === READY ||
+          obj.status === WORK ||
+          obj.status === WAIT
+        ) {
+          isNextStep = false;
+        }
       });
+
       if (isNextStep) {
-        console.log("Step 3 finished");
-        this.orderStepAction(id);
-        // this.$emit("onSetStage", this.order.id);
+        this.orderStepAction({
+          id,
+          stage: 4,
+        });
+        arr.forEach((obj) => {
+          obj.stage = 4;
+
+          this.Modules.forEach((module) => {
+            if (module.suborderID == obj.id) {
+              module.stage = 4;
+
+              this.Details.forEach((detail) => {
+                if (detail.moduleID == module.id) {
+                  detail.stage = 4;
+                }
+              });
+            }
+          });
+        });
       }
     },
-
-  //   setStage(id) {
-  //     this.$emit("onSetStage", id);
-  //   },
   },
 
   computed: {
-    ...mapGetters(['Suborders', 'Orders']),
+    ...mapGetters(["Suborders", "Modules", "Details"]),
 
-   changeModuleCompleted() {
-      this.setWorked();
-      console.log("Step 3 started");
-      return this.Suborders;
+    changeModuleCompleted() {
+      let isWork = false;
+
+      this.Suborders.forEach((obj) => {
+        if (obj.status === WORK) {
+          isWork = true;
+        }
+      });
+
+      if (!isWork) {
+        this.setWorked();
+        return this.Suborders;
+      }
     },
   },
 
   watch: {
-    changeModuleCompleted() {}
-  }
+    changeModuleCompleted() {},
+  },
 };
 </script>
 
 <style>
-.container {
-  display: flex;
-}
-.work {
-  width: 600px;
-  margin-right: 100px;
-}
-.worked {
-  width: 600px;
-  margin-right: 100px;
-}
-.finish {
-  width: 600px;
-}
 </style>

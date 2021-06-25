@@ -29,30 +29,13 @@ export default {
   },
 
   methods: {
-     ...mapActions(['moduleStepAction']),
-
-    addTask(payload) {
-      this.module.details.push({
-        id: Date.now(),
-        name: payload.name,
-        moduleID: payload.listID,
-        status: READY,
-      });
-    },
-
-    setPause(index) {
-      if (this.orders[index].status === READY) {
-        this.orders[index].status = PAUSE;
-      } else {
-        this.orders[index].status = READY;
-      }
-    },
+    ...mapActions(["moduleStepAction"]),
 
     setWorked() {
       if (this.Details) {
         let isReady = this.Details.find((item) => item.status === READY);
         if (isReady) {
-          setTimeout(() => {
+          // setTimeout(() => {
             let el = { ...this.Details.pop() };
             el.status = WORK;
             this.Details.unshift(el);
@@ -61,53 +44,58 @@ export default {
               let obj = { ...this.Details.shift() };
               obj.status = FINISH;
               this.Details.unshift(obj);
-              this.getNextStep();
+              this.getNextStep(obj.moduleID);
               this.setWorked();
             }, this.time);
-          }, 500);
+          // }, 500);
         }
+
+        // this.Details.forEach((detail, index) => {
+        //   if (detail.status === READY) {
+        //     detail.status = WORK;
+        //     setTimeout(() => {
+        //       detail.status = FINISH
+        //       this.getNextStep(detail.moduleID);
+        //       // this.setWorked();
+        //     }, this.time)
+        //   }
+        // })
+
       }
     },
 
-    getNextStep() {
+    getNextStep(id) {
       let isNextStep = true;
-      let id = null
 
-      this.Modules.forEach((module) => {
-        this.Details.forEach((item) => {
-          if (item.moduleID == module.id) {
-            id = item.moduleID
-            if (item.status === READY || item.status === WORK) {
-              isNextStep = false;
-            }
-          }
-        });
+      let arr = this.Details.filter(detail => detail.moduleID == id )
+      arr.forEach((obj) => {
+          if (obj.status === READY || obj.status === WORK) {
+        isNextStep = false;
+        }
       });
 
       if (isNextStep) {
-        console.log("Step 1 finished");
-        this.moduleStepAction(id);
-        // this.$emit("onSetStage", this.order.id);
+        this.moduleStepAction({
+          id,
+          stage: 2
+        });
+        arr.forEach(obj => {
+          obj.stage = 2
+        })
       }
     },
   },
 
   computed: {
-    ...mapGetters(["Details", "Modules"]),
+    ...mapGetters(["Details"]),
   },
 
   created() {
     this.setWorked();
-    console.log("Step 1 started");
   },
 };
 </script>
 
 <style>
-.container {
-  display: flex;
-  margin: 0 auto;
-  align-items: flex-start;
-  justify-content: space-between;
-}
+
 </style>

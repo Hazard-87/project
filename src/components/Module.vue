@@ -27,91 +27,84 @@ export default {
   },
 
   methods: {
-    ...mapActions(['suborderStepAction']),
-    // addTask(payload) {
-    //   this.suborder.modules.push({
-    //     id: Date.now(),
-    //     name: payload.name,
-    //     suborderID: payload.listID,
-    //     status: READY,
-    //   });
-    // },
+    ...mapActions(["suborderStepAction"]),
 
     setWorked() {
       let isReady = this.Modules.find((item) => item.status === READY);
       if (isReady) {
-        setTimeout(() => {
-          let el = { ...this.Modules.pop() };
-          el.status = WORK;
-          this.Modules.unshift(el);
+        // setTimeout(() => {
+        let el = { ...this.Modules.pop() };
+        el.status = WORK;
+        this.Modules.unshift(el);
 
-          setTimeout(() => {
-            let obj = { ...this.Modules.shift() };
-            obj.status = FINISH;
-            this.Modules.unshift(obj);
-            this.getNextStep();
-            this.setWorked();
-          }, this.time);
-        }, 500);
+        setTimeout(() => {
+          let obj = { ...this.Modules.shift() };
+          obj.status = FINISH;
+          this.Modules.unshift(obj);
+          this.getNextStep(obj.suborderID);
+          this.setWorked();
+        }, this.time);
+        // }, 100);
       }
     },
 
-    getNextStep() {
+    getNextStep(id) {
       let isNextStep = true;
-      let id = null;
 
-      this.Suborders.forEach((suborder) => {
-        this.Modules.forEach((item) => {
-          if (item.suborderID == suborder.id) {
-            id = item.suborderID;
-            if (item.status === READY || item.status === WORK) {
-              isNextStep = false;
-            }
-          }
-        });
+      let arr = this.Modules.filter((module) => module.suborderID == id);
+      arr.forEach((obj) => {
+        if (
+          obj.status === READY ||
+          obj.status === WORK ||
+          obj.status === WAIT
+        ) {
+          isNextStep = false;
+        }
       });
 
       if (isNextStep) {
-        console.log("Step 2 finished");
-        this.suborderStepAction(id);
-        // this.$emit("onSetStage", this.order.id);
+        this.suborderStepAction({
+          id,
+          stage: 3,
+        });
+        arr.forEach((obj) => {
+          obj.stage = 3;
+
+          this.Details.forEach((detail) => {
+            if (detail.moduleID == obj.id) {
+              detail.stage = 3;
+            }
+          });
+        });
       }
     },
-
-    //   setStage(id) {
-    //     this.$emit("onSetStage", id);
-    //   },
   },
 
   computed: {
-    ...mapGetters(["Modules", "Suborders"]),
+    ...mapGetters(["Modules", "Details"]),
 
     changeDetailCompleted() {
-      this.setWorked();
-      console.log("Step 2 started");
+      let isWork = false;
+
+      this.Modules.forEach((obj) => {
+        if (obj.status === WORK) {
+          isWork = true;
+        }
+      });
+
+      if (!isWork) {
+        this.setWorked();
+      }
+
       return this.Modules;
     },
   },
 
   watch: {
-    changeDetailCompleted() {}
-  }
+    changeDetailCompleted() {},
+  },
 };
 </script>
 
 <style>
-.container {
-  display: flex;
-}
-.work {
-  width: 600px;
-  margin-right: 100px;
-}
-.worked {
-  width: 600px;
-  margin-right: 100px;
-}
-.finish {
-  width: 600px;
-}
 </style>
