@@ -30,21 +30,16 @@ export default {
     ...mapActions(["suborderStepAction"]),
 
     setWorked() {
-      let isReady = this.Modules.find((item) => item.status === READY);
-      if (isReady) {
-        // setTimeout(() => {
-        let el = { ...this.Modules.pop() };
-        el.status = WORK;
-        this.Modules.unshift(el);
-
-        setTimeout(() => {
-          let obj = { ...this.Modules.shift() };
-          obj.status = FINISH;
-          this.Modules.unshift(obj);
-          this.getNextStep(obj.suborderID);
-          this.setWorked();
-        }, this.time);
-        // }, 100);
+      if (this.Modules) {
+        let obj = this.Modules.find((item) => item.status === READY);
+        if (obj) {
+          obj.status = WORK;
+          setTimeout(() => {
+            obj.status = FINISH;
+            this.getNextStep(obj.suborderID);
+            this.setWorked();
+          }, this.time);
+        }
       }
     },
 

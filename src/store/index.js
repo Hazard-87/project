@@ -32,7 +32,7 @@ export default new Vuex.Store({
 
           let arr = state.modules.filter(obj => obj.suborderID == module.suborderID)
           var newArr = arr.reduce(function (prev, current) {
-            if (+current.id < +prev.id) {
+            if (+current.id > +prev.id) {
               return current;
             } else {
               return prev;
@@ -45,7 +45,7 @@ export default new Vuex.Store({
 
               let item = state.suborders.filter(obj => obj.orderID == suborder.orderID)
               var newItem = item.reduce(function (prev, current) {
-                if (+current.id < +prev.id) {
+                if (+current.id > +prev.id) {
                   return current;
                 } else {
                   return prev;
@@ -71,7 +71,7 @@ export default new Vuex.Store({
 
           let arr = state.suborders.filter(obj => obj.orderID == suborder.orderID)
           var newArr = arr.reduce(function (prev, current) {
-            if (+current.id < +prev.id) {
+            if (+current.id > +prev.id) {
               return current;
             } else {
               return prev;

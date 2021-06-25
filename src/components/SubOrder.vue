@@ -33,21 +33,16 @@ export default {
     ...mapActions(["orderStepAction"]),
 
     setWorked() {
-      let isReady = this.Suborders.find((item) => item.status === READY);
-      if (isReady) {
-        // setTimeout(() => {
-        let el = { ...this.Suborders.pop() };
-        el.status = WORK;
-        this.Suborders.unshift(el);
-
-        setTimeout(() => {
-          let obj = { ...this.Suborders.shift() };
-          obj.status = FINISH;
-          this.Suborders.unshift(obj);
-          this.getNextStep(obj.orderID);
-          this.setWorked();
-        }, this.time);
-        // }, 500);
+      if (this.Suborders) {
+        let obj = this.Suborders.find((item) => item.status === READY);
+        if (obj) {
+          obj.status = WORK;
+          setTimeout(() => {
+            obj.status = FINISH;
+            this.getNextStep(obj.orderID);
+            this.setWorked();
+          }, this.time);
+        }
       }
     },
 

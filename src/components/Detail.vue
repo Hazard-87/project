@@ -33,55 +33,36 @@ export default {
 
     setWorked() {
       if (this.Details) {
-        let isReady = this.Details.find((item) => item.status === READY);
-        if (isReady) {
-          // setTimeout(() => {
-            let el = { ...this.Details.pop() };
-            el.status = WORK;
-            this.Details.unshift(el);
-
-            setTimeout(() => {
-              let obj = { ...this.Details.shift() };
-              obj.status = FINISH;
-              this.Details.unshift(obj);
-              this.getNextStep(obj.moduleID);
-              this.setWorked();
-            }, this.time);
-          // }, 500);
+        let obj = this.Details.find((item) => item.status === READY);
+        if (obj) {
+          obj.status = WORK;
+          setTimeout(() => {
+            obj.status = FINISH;
+            this.getNextStep(obj.moduleID);
+            this.setWorked();
+          }, this.time);
         }
-
-        // this.Details.forEach((detail, index) => {
-        //   if (detail.status === READY) {
-        //     detail.status = WORK;
-        //     setTimeout(() => {
-        //       detail.status = FINISH
-        //       this.getNextStep(detail.moduleID);
-        //       // this.setWorked();
-        //     }, this.time)
-        //   }
-        // })
-
       }
     },
 
     getNextStep(id) {
       let isNextStep = true;
 
-      let arr = this.Details.filter(detail => detail.moduleID == id )
+      let arr = this.Details.filter((detail) => detail.moduleID == id);
       arr.forEach((obj) => {
-          if (obj.status === READY || obj.status === WORK) {
-        isNextStep = false;
+        if (obj.status === READY || obj.status === WORK) {
+          isNextStep = false;
         }
       });
 
       if (isNextStep) {
         this.moduleStepAction({
           id,
-          stage: 2
+          stage: 2,
         });
-        arr.forEach(obj => {
-          obj.stage = 2
-        })
+        arr.forEach((obj) => {
+          obj.stage = 2;
+        });
       }
     },
   },
@@ -97,5 +78,4 @@ export default {
 </script>
 
 <style>
-
 </style>

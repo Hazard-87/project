@@ -27,27 +27,21 @@ export default {
 
   methods: {
     setWorked() {
-      let isReady = this.Orders.find((item) => item.status === READY);
-      if (isReady) {
-        // setTimeout(() => {
-          let el = { ...this.Orders.pop() };
-          el.status = WORK;
-
-          this.Orders.unshift(el);
-
+      if (this.Orders) {
+        let obj = this.Orders.find((item) => item.status === READY);
+        if (obj) {
+          obj.status = WORK;
           setTimeout(() => {
-            let obj = { ...this.Orders.shift() };
             obj.status = FINISH;
-            this.Orders.unshift(obj);
             this.getNextStep();
             this.setWorked();
           }, this.time);
-        // }, 500);
+        }
       }
     },
 
     getNextStep() {
-      console.log("order finished");  
+      console.log("order finished");
     },
   },
 
