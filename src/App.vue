@@ -1,27 +1,11 @@
 <template>
   <div id="app">
-      <div class="table">
-        <div class="box">
-          <span>Orders</span>
-          <RowHeader />
-          <Order />
-        </div>
-        <div class="box">
-          <span>Suborders</span>
-          <RowHeader listID="orderID" />
-          <SubOrder />
-        </div>
-        <div class="box">
-          <span>Modules</span>
-          <RowHeader listID="suborderID" />
-          <Module />
-        </div>
-        <div class="box">
-          <span>Details</span>
-          <RowHeader listID="moduleID" />
-          <Detail />
-        </div>
-      </div>
+    <div class="table">
+      <Order />
+      <SubOrder />
+      <Module />
+      <Detail />
+    </div>
   </div>
 </template>
 
@@ -46,7 +30,7 @@ export default {
     SubOrder,
     Module,
     Detail,
-    RowHeader
+    RowHeader,
   },
 
   data() {
@@ -366,5 +350,9 @@ export default {
 .box {
   width: 50%;
   margin-bottom: 10px;
+}
+.box-top {
+  display: flex;
+  justify-content: space-between;
 }
 </style>

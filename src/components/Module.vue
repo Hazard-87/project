@@ -1,11 +1,18 @@
 <template>
-  <div>
+  <div class="box">
+    <div class="box-top">
+      <span>Modules</span>
+      <Form />
+    </div>
+    <RowHeader listID="suborderID" />
     <RowItem v-for="module in Modules" :key="module.id" :list="module" />
   </div>
 </template>
 
 <script>
 import RowItem from "@/components/RowItem.vue";
+import RowHeader from "@/components/RowHeader.vue";
+import Form from "@/components/Form.vue";
 import { mapGetters, mapActions } from "vuex";
 
 const WORK = "WORK";
@@ -18,6 +25,8 @@ export default {
 
   components: {
     RowItem,
+    RowHeader,
+    Form
   },
 
   data() {
@@ -45,9 +54,11 @@ export default {
 
     getNextStep(id) {
       let isNextStep = true;
+      let currentStage = null;
 
       let arr = this.Modules.filter((module) => module.suborderID == id);
       arr.forEach((obj) => {
+        currentStage = obj.stage + 1;
         if (
           obj.status === READY ||
           obj.status === WORK ||
@@ -60,14 +71,14 @@ export default {
       if (isNextStep) {
         this.suborderStepAction({
           id,
-          stage: 3,
+          stage: currentStage,
         });
         arr.forEach((obj) => {
-          obj.stage = 3;
+          obj.stage = currentStage;
 
           this.Details.forEach((detail) => {
             if (detail.moduleID == obj.id) {
-              detail.stage = 3;
+              detail.stage = currentStage;
             }
           });
         });

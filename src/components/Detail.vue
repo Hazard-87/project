@@ -1,11 +1,17 @@
 <template>
-  <div>
+  <div class="box">
+    <div class="box-top">
+      <span>Details</span>
+      <Form @addTask="addTask" />
+    </div>
+    <RowHeader listID="moduleID" />
     <RowItem v-for="detail in Details" :key="detail.id" :list="detail" />
   </div>
 </template>
 
 <script>
 import RowItem from "@/components/RowItem.vue";
+import RowHeader from "@/components/RowHeader.vue";
 import Form from "@/components/Form.vue";
 import { mapGetters, mapActions } from "vuex";
 
@@ -19,6 +25,7 @@ export default {
 
   components: {
     RowItem,
+    RowHeader,
     Form,
   },
 
@@ -30,6 +37,16 @@ export default {
 
   methods: {
     ...mapActions(["moduleStepAction"]),
+
+    addTask(payload) {
+      this.Details.push({
+        id: this.Details.length + 1,
+        name: payload.name,
+        moduleID: payload.listID,
+        status: READY,
+        stage: 1,
+      });
+    },
 
     setWorked() {
       if (this.Details) {
@@ -47,9 +64,11 @@ export default {
 
     getNextStep(id) {
       let isNextStep = true;
+      let currentStage = null;
 
       let arr = this.Details.filter((detail) => detail.moduleID == id);
       arr.forEach((obj) => {
+        currentStage = obj.stage + 1;
         if (obj.status === READY || obj.status === WORK) {
           isNextStep = false;
         }
@@ -58,10 +77,10 @@ export default {
       if (isNextStep) {
         this.moduleStepAction({
           id,
-          stage: 2,
+          stage: currentStage,
         });
         arr.forEach((obj) => {
-          obj.stage = 2;
+          obj.stage = currentStage;
         });
       }
     },
