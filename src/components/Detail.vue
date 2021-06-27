@@ -2,14 +2,14 @@
   <div class="box">
     <div class="box-top">
       <span>Details</span>
-      <Form @addTask="addTask" />
+      <Form @addTask="addTask"/>
     </div>
-    <RowHeader listID="moduleID" />
+    <RowHeader listID="moduleID"/>
     <RowItem
-      v-for="detail in Details"
-      :key="detail.id"
-      :list="detail"
-      @onClick="toggleStatus(detail.id)"
+        v-for="detail in Details"
+        :key="detail.id"
+        :list="detail"
+        @onClick="toggleStatus(detail.id)"
     />
   </div>
 </template>
@@ -18,7 +18,7 @@
 import RowItem from "@/components/RowItem.vue";
 import RowHeader from "@/components/RowHeader.vue";
 import Form from "@/components/Form.vue";
-import { mapGetters, mapActions } from "vuex";
+import {mapGetters, mapActions} from "vuex";
 
 const WORK = "WORK";
 const READY = "READY";
@@ -43,6 +43,20 @@ export default {
   methods: {
     ...mapActions(["moduleStepAction"]),
 
+    runWorked() {
+      let isWork = false;
+
+      this.Details.forEach((obj) => {
+        if (obj.status === WORK) {
+          isWork = true;
+        }
+      });
+
+      if (!isWork) {
+        this.setWorked();
+      }
+    },
+
     toggleStatus(id) {
       this.Details.forEach((detail) => {
         if (detail.id === id && detail.status === READY) {
@@ -50,17 +64,7 @@ export default {
         } else if (detail.id === id && detail.status === PAUSE) {
           detail.status = READY;
 
-          let isWork = false;
-
-          this.Details.forEach((obj) => {
-            if (obj.status === WORK) {
-              isWork = true;
-            }
-          });
-
-          if (!isWork) {
-            this.setWorked();
-          }
+          this.runWorked()
         }
       });
     },
@@ -116,25 +120,14 @@ export default {
   computed: {
     ...mapGetters(["Details"]),
 
-    changeDetailCompleted() {
-      let isWork = false;
-
-      this.Details.forEach((obj) => {
-        if (obj.status === WORK) {
-          isWork = true;
-        }
-      });
-
-      if (!isWork) {
-        this.setWorked();
-      }
-
-      return this.Details;
+    changeDetails() {
+      this.runWorked()
     },
   },
 
   watch: {
-    changeDetailCompleted() {
+    changeDetails() {
+      return this.Details;
     },
   },
 

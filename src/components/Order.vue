@@ -42,6 +42,20 @@ export default {
   },
 
   methods: {
+    runWorked() {
+      let isWork = false;
+
+      this.Orders.forEach((obj) => {
+        if (obj.status === WORK) {
+          isWork = true;
+        }
+      });
+
+      if (!isWork) {
+        this.setWorked();
+      }
+    },
+
     toggleStatus(id) {
       this.Orders.forEach((order) => {
         if (order.id === id && (order.status === READY || order.status === WAIT)) {
@@ -95,17 +109,7 @@ export default {
             }
           })
 
-          let isWork = false;
-
-          this.Orders.forEach((obj) => {
-            if (obj.status === WORK) {
-              isWork = true;
-            }
-          });
-
-          if (!isWork) {
-            this.setWorked();
-          }
+          this.runWorked()
         }
       });
     },
@@ -162,26 +166,19 @@ export default {
     ...mapGetters(["Orders", "Suborders", "Modules", "Details"]),
 
     changeSuborderCompleted() {
-      let isWork = false;
-
-      this.Orders.forEach((obj) => {
-        if (obj.status === WORK) {
-          isWork = true;
-        }
-      });
-
-      if (!isWork) {
-        this.setWorked();
-        return this.Orders;
-      }
+      this.runWorked()
     },
-  },
+  }
+  ,
 
   watch: {
     changeSuborderCompleted() {
-    },
-  },
-};
+      return this.Orders;
+    }
+  }
+  ,
+}
+;
 </script>
 
 <style>

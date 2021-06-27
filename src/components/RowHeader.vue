@@ -13,7 +13,9 @@
 export default {
     name: 'RowHeader',
 
-    props: ['listID'],
+    props: {
+      listID: String,
+    }
 }
 </script>
 <style>

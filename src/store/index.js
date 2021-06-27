@@ -26,13 +26,13 @@ export default new Vuex.Store({
 
     setStepModules(state, payload) {
       state.modules.forEach(module => {
-        if (module.id == payload.id) {
+        if (module.id === payload.id && module.status !== 'PAUSE') {
           module.status = "READY"
           module.stage = payload.stage
 
-          let arr = state.modules.filter(obj => obj.suborderID == module.suborderID)
-          var newArr = arr.reduce(function (prev, current) {
-            if (+current.id > +prev.id) {
+          let arr = state.modules.filter(obj => obj.suborderID === module.suborderID)
+          let moduleMinStageObj = arr.reduce(function (prev, current) {
+            if (current.id > prev.id) {
               return current;
             } else {
               return prev;
@@ -40,12 +40,12 @@ export default new Vuex.Store({
           });
 
           state.suborders.forEach(suborder => {
-            if (suborder.id == module.suborderID) {
-              suborder.stage = newArr.stage
+            if (suborder.id === module.suborderID) {
+              suborder.stage = moduleMinStageObj.stage
 
-              let item = state.suborders.filter(obj => obj.orderID == suborder.orderID)
-              var newItem = item.reduce(function (prev, current) {
-                if (+current.id > +prev.id) {
+              let newArr = state.suborders.filter(obj => obj.orderID === suborder.orderID)
+              let suborderMinStageObj = newArr.reduce(function (prev, current) {
+                if (current.id > prev.id) {
                   return current;
                 } else {
                   return prev;
@@ -53,8 +53,8 @@ export default new Vuex.Store({
               });
 
               state.orders.forEach(order => {
-                if (order.id == suborder.orderID) {
-                  order.stage = newItem.stage
+                if (order.id === suborder.orderID) {
+                  order.stage = suborderMinStageObj.stage
                 }
               })
             }
@@ -65,13 +65,13 @@ export default new Vuex.Store({
 
     setStepSuborders(state, payload) {
       state.suborders.forEach(suborder => {
-        if (suborder.id == payload.id) {
+        if (suborder.id === payload.id && suborder.status !== 'PAUSE') {
           suborder.status = "READY"
           suborder.stage = payload.stage
 
-          let arr = state.suborders.filter(obj => obj.orderID == suborder.orderID)
-          var newArr = arr.reduce(function (prev, current) {
-            if (+current.id > +prev.id) {
+          let arr = state.suborders.filter(obj => obj.orderID === suborder.orderID)
+          let suborderMinStageObj = arr.reduce(function (prev, current) {
+            if (current.id > prev.id) {
               return current;
             } else {
               return prev;
@@ -79,18 +79,17 @@ export default new Vuex.Store({
           });
          
           state.orders.forEach(order => {
-            if (order.id == suborder.orderID) {
-              order.stage = newArr.stage
+            if (order.id === suborder.orderID) {
+              order.stage = suborderMinStageObj.stage
             }
           })
         }
-        // }
       })
     },
 
     setStepOrders(state, payload) {
       state.orders.forEach(order => {
-        if (order.id == payload.id) {
+        if (order.id === payload.id && order.status !== 'PAUSE') {
           order.status = "READY"
           order.stage = payload.stage
         }

@@ -44,6 +44,20 @@ export default {
   methods: {
     ...mapActions(["suborderStepAction"]),
 
+    runWorked() {
+      let isWork = false;
+
+      this.Modules.forEach((obj) => {
+        if (obj.status === WORK) {
+          isWork = true;
+        }
+      });
+
+      if (!isWork) {
+        this.setWorked();
+      }
+    },
+
     toggleStatus(id) {
       this.Modules.forEach((module) => {
         if (module.id === id && (module.status === READY || module.status === WAIT)) {
@@ -66,17 +80,7 @@ export default {
             }
           })
 
-          let isWork = false;
-
-          this.Modules.forEach((obj) => {
-            if (obj.status === WORK) {
-              isWork = true;
-            }
-          });
-
-          if (!isWork) {
-            this.setWorked();
-          }
+          this.runWorked()
         }
       });
     },
@@ -144,24 +148,13 @@ export default {
     ...mapGetters(["Modules", "Details"]),
 
     changeDetailCompleted() {
-      let isWork = false;
-
-      this.Modules.forEach((obj) => {
-        if (obj.status === WORK) {
-          isWork = true;
-        }
-      });
-
-      if (!isWork) {
-        this.setWorked();
-      }
-
-      return this.Modules;
+      this.runWorked()
     },
   },
 
   watch: {
     changeDetailCompleted() {
+      return this.Modules;
     },
   },
 };

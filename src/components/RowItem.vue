@@ -16,7 +16,9 @@
 export default {
   name: 'RowItem',
 
-  props: ['list'],
+  props: {
+    list: Object
+  },
 
   computed: {
     listID() {
