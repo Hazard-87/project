@@ -2,13 +2,14 @@
   <div class="box">
     <div class="box-top">
       <span>Suborders</span>
-      <Form @addTask="addTask" />
+      <Form @addTask="addTask"/>
     </div>
-    <RowHeader listID="orderID" />
+    <RowHeader listID="orderID"/>
     <RowItem
-      v-for="suborder in Suborders"
-      :key="suborder.id"
-      :list="suborder"
+        v-for="suborder in Suborders"
+        :key="suborder.id"
+        :list="suborder"
+        @onClick="toggleStatus(suborder.id)"
     />
   </div>
 </template>
@@ -17,29 +18,84 @@
 import RowItem from "@/components/RowItem.vue";
 import RowHeader from "@/components/RowHeader.vue";
 import Form from "@/components/Form.vue";
-import { mapGetters, mapActions } from "vuex";
+import {mapGetters, mapActions} from "vuex";
 
 const WORK = "WORK";
 const READY = "READY";
 const FINISH = "FINISH";
 const WAIT = "WAIT";
+const PAUSE = "PAUSE";
 
 export default {
   name: "SubOrder",
   components: {
     RowItem,
     RowHeader,
-    Form
+    Form,
   },
 
   data() {
     return {
-      time: 15000,
+      time: 45000,
     };
   },
 
   methods: {
     ...mapActions(["orderStepAction"]),
+
+    toggleStatus(id) {
+      this.Suborders.forEach((suborder) => {
+        if (suborder.id === id && (suborder.status === READY || suborder.status === WAIT)) {
+          suborder.status = PAUSE;
+          this.Modules.forEach(module => {
+            if (module.suborderID === suborder.id && (module.status === READY || module.status === WAIT)) {
+              module.status = PAUSE
+              this.Details.forEach(detail => {
+                if (detail.moduleID === module.id && (detail.status === READY || detail.status === WAIT)) {
+                  detail.status = PAUSE
+                }
+              })
+            }
+          })
+        } else if (suborder.id === id && suborder.status === PAUSE) {
+          let isReady = this.Modules.find(module => module.suborderID === suborder.id && (module.status === PAUSE || module.status === WORK))
+          if (isReady) {
+            suborder.status = WAIT
+          } else {
+            suborder.status = READY
+          }
+
+          this.Modules.forEach(module => {
+            if (module.suborderID === suborder.id && module.status === PAUSE) {
+              let isReady = this.Details.find(detail => detail.moduleID === module.id && (detail.status === PAUSE || detail.status === WORK || detail.status === READY))
+              if (isReady) {
+                module.status = WAIT
+              } else {
+                module.status = READY
+              }
+
+              this.Details.forEach(detail => {
+                if (detail.moduleID === module.id && detail.status === PAUSE) {
+                  detail.status = READY
+                }
+              })
+            }
+          })
+
+          let isWork = false;
+
+          this.Suborders.forEach((obj) => {
+            if (obj.status === WORK) {
+              isWork = true;
+            }
+          });
+
+          if (!isWork) {
+            this.setWorked();
+          }
+        }
+      });
+    },
 
     addTask(payload) {
       this.Suborders.push({
@@ -69,13 +125,14 @@ export default {
       let isNextStep = true;
       let currentStage = null;
 
-      let arr = this.Suborders.filter((suborder) => suborder.orderID == id);
+      let arr = this.Suborders.filter((suborder) => suborder.orderID === id);
       arr.forEach((obj) => {
         currentStage = obj.stage + 1;
         if (
-          obj.status === READY ||
-          obj.status === WORK ||
-          obj.status === WAIT
+            obj.status === READY ||
+            obj.status === WORK ||
+            obj.status === WAIT ||
+            obj.status === PAUSE
         ) {
           isNextStep = false;
         }
@@ -90,11 +147,11 @@ export default {
           obj.stage = currentStage;
 
           this.Modules.forEach((module) => {
-            if (module.suborderID == obj.id) {
+            if (module.suborderID === obj.id) {
               module.stage = currentStage;
 
               this.Details.forEach((detail) => {
-                if (detail.moduleID == module.id) {
+                if (detail.moduleID === module.id) {
                   detail.stage = currentStage;
                 }
               });
@@ -125,7 +182,8 @@ export default {
   },
 
   watch: {
-    changeModuleCompleted() {},
+    changeModuleCompleted() {
+    },
   },
 };
 </script>

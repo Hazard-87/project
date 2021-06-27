@@ -6,6 +6,7 @@
       <div class="row-item">Stage</div>
       <div v-if="listID" class="row-item">{{ listID }}</div>
       <div v-else class="row-item"></div>
+      <div class="empty"></div>
     </div>
 </template>
 <script>

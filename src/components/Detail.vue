@@ -5,7 +5,12 @@
       <Form @addTask="addTask" />
     </div>
     <RowHeader listID="moduleID" />
-    <RowItem v-for="detail in Details" :key="detail.id" :list="detail" />
+    <RowItem
+      v-for="detail in Details"
+      :key="detail.id"
+      :list="detail"
+      @onClick="toggleStatus(detail.id)"
+    />
   </div>
 </template>
 
@@ -38,6 +43,28 @@ export default {
   methods: {
     ...mapActions(["moduleStepAction"]),
 
+    toggleStatus(id) {
+      this.Details.forEach((detail) => {
+        if (detail.id === id && detail.status === READY) {
+          detail.status = PAUSE;
+        } else if (detail.id === id && detail.status === PAUSE) {
+          detail.status = READY;
+
+          let isWork = false;
+
+          this.Details.forEach((obj) => {
+            if (obj.status === WORK) {
+              isWork = true;
+            }
+          });
+
+          if (!isWork) {
+            this.setWorked();
+          }
+        }
+      });
+    },
+
     addTask(payload) {
       this.Details.push({
         id: this.Details.length + 1,
@@ -66,10 +93,10 @@ export default {
       let isNextStep = true;
       let currentStage = null;
 
-      let arr = this.Details.filter((detail) => detail.moduleID == id);
+      let arr = this.Details.filter((detail) => detail.moduleID === id);
       arr.forEach((obj) => {
         currentStage = obj.stage + 1;
-        if (obj.status === READY || obj.status === WORK) {
+        if (obj.status === READY || obj.status === WORK || obj.status === PAUSE) {
           isNextStep = false;
         }
       });
@@ -88,13 +115,32 @@ export default {
 
   computed: {
     ...mapGetters(["Details"]),
+
+    changeDetailCompleted() {
+      let isWork = false;
+
+      this.Details.forEach((obj) => {
+        if (obj.status === WORK) {
+          isWork = true;
+        }
+      });
+
+      if (!isWork) {
+        this.setWorked();
+      }
+
+      return this.Details;
+    },
   },
 
-  created() {
-    this.setWorked();
+  watch: {
+    changeDetailCompleted() {
+    },
   },
+
 };
 </script>
 
 <style>
+
 </style>
